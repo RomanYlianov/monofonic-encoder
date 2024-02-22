@@ -39,7 +39,12 @@ namespace Cipher
             Properties.EncodingType = "ASCII";
             Properties.Order = OrderType.INCREASE_ZERO;
             Properties.AlgBasedData = AlgData.DEFAULT;
-            
+            Properties.ShowStatistic = false;
+
+
+            mulKoefficient.Minimum = 1;
+            mulKoefficient.Maximum = 10;
+            learnModeAutoRbtn.Checked = true;
 
 
             await Task.Run(() => manager.CreateSession());
@@ -179,7 +184,7 @@ namespace Cipher
 
             //before closing
 
-           
+
 
             await Task.Run(() => manager.DestroySession());
 
@@ -195,7 +200,7 @@ namespace Cipher
                     logger.Text += "\n" + msg;
                 }
             }
-            
+
 
         }
 
@@ -221,10 +226,9 @@ namespace Cipher
             }
             void setEnable(bool f)
             {
-                learn_btn.Enabled = f;
-                abc_btn.Enabled = f;
-                // encodingCmb.Enabled = f;
 
+                abc_btn.Enabled = f;
+                learnGroupBox.Enabled = f;
             }
         }
 
@@ -240,6 +244,11 @@ namespace Cipher
 
             }
 
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.ShowStatistic = (symbolsStatistic.Checked);
         }
 
         private void MethodResultHandler()
@@ -301,9 +310,33 @@ namespace Cipher
             return date;
         }
 
-        private async void button1_Click(object sender, EventArgs e)
+        /* private async void button1_Click(object sender, EventArgs e)
+         {
+             MessageBox.Show(Properties.UserId.ToString());
+         }*/
+
+        private void nd_koeff_ValueChanged(object sender, EventArgs e)
         {
-            MessageBox.Show(Properties.UserId.ToString());
+            Properties.MultiplyCoefficient = (int)mulKoefficient.Value;
+
         }
+
+        private void learnModeRbtn_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rBtn = (RadioButton)sender;
+            switch (rBtn.Name)
+            {
+                case "learnModeAutoRbtn":
+                    mulKoefficient.Enabled = false;
+                    Properties.Mode = LearnMode.AUTO;
+                    break;
+                case "learnModeManualRbtn":
+                    mulKoefficient.Enabled = true;
+                    Properties.Mode = LearnMode.MANUAL;
+                    break;
+            }
+        }
+
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -20,6 +21,8 @@ namespace Cipher.Model
         int blockSize = 4;
 
         int decodedSymbolCode = -1;
+
+      
 
 
         List<ABCItem> words;
@@ -72,61 +75,82 @@ namespace Cipher.Model
                 }
             }
 
+            //calculate freq
+
+            for (int i = 0; i < words.Count; i++)
+            {
+                words[i].Freq = (words[i].CountInText* 1.0) / countAll;
+            }
+
             //calculate replace indexes
 
             words.Sort((a, b) => a.Freq.CompareTo(b.Freq));
 
-            int replaceCount = words.Count;
+            double minFreq = words.Select(w => w.Freq).Min();
 
-            for (int i=0; i<words.Count; i++)
+            double maxFreq = words.Select(w => w.Freq).Max();         
+
+            switch (Properties.Mode)
             {
-                for (int j=0; j<replaceCount; j++)
-                {
-                    int code = i * replaceCount + j;
-                    words[i].ReplaceCodes.Add(code);
-                }
-            }
+                case LearnMode.AUTO:
+                    {
+                        int replaceSymbolsCount = 10;
 
-            //double minFreq = double.MaxValue, maxFreq = double.MinValue;
+                        double freqStep = (maxFreq - minFreq) / words.Count;
 
-            //for (int i = 0; i < words.Count; i++)
-            //{
-            //    ABCItem item = words.ElementAt(i);
-            //    item.Freq = (item.CountInText * 1.0) / countAll;
-            //    if (item.Freq < minFreq)
-            //    {
-            //        minFreq = item.Freq;
-            //    }
-            //    if (item.Freq > maxFreq)
-            //    {
-            //        maxFreq = item.Freq;
-            //    }
-            //}
+                        int startCode = 0;
 
-            //шаг для уменьшения количества слов в замене
-            /*double decreaseStep = (maxFreq - minFreq) / words.Count;
+                        double currFreq = minFreq;
 
-            words.Sort((a, b) => a.Freq.CompareTo(b.Freq));
+                        for (int i = 0; i < words.Count; i++)
+                        {
 
-            int replaceCount = words.Count;
+                            while (currFreq < words[i].Freq)
+                            {
+                                currFreq += freqStep;
+                                replaceSymbolsCount++;
+                            }
+                            for (int j = 0; j < replaceSymbolsCount; j++)
+                            {
+                                words[i].ReplaceCodes.Add(startCode);
+                                startCode++;
+                            }
 
-            double curFreq = maxFreq;
+                        }
+                    }
+                    break;
+                case LearnMode.MANUAL:
+                    {
+                        int roundCount = 0;
 
-            for (int i = words.Count - 1; i >= 0; i--)
-            {
-                while (curFreq > words[i].Freq)
-                {
-                    curFreq -= decreaseStep;
-                    replaceCount--;
-                }
-                for (int j = 0; j < replaceCount; j++)
-                {
-                    int code = i * replaceCount + j;
-                    words[i].ReplaceCodes.Add(code);
-                }
-            }*/
+                        foreach (char c in minFreq.ToString())
+                        {
+                            if (c != '.')
+                            {
+                                if (int.Parse(c.ToString()) > 0)
+                                {
+                                    break;
+                                }
+                            }
+                            roundCount++;
+                        }
 
-            int t = 0;
+                        int startPosition = 0;
+
+                        for (int i = 0; i < words.Count; i++)
+                        {
+                            double roundFreq = words[i].Freq * Math.Pow(10, roundCount);
+                            int symbolsCount = (int)Math.Round(roundFreq * (Properties.MultiplyCoefficient * 10));
+                            for (int j = 0; j < symbolsCount; j++)
+                            {
+                                int code = startPosition + j;
+                                words[i].ReplaceCodes.Add(code);
+                            }
+                            startPosition += symbolsCount;
+                        }
+                    }
+                    break;
+            }      
 
             //saving to database
 
@@ -340,8 +364,10 @@ namespace Cipher.Model
                 return result;
             }
 
-
-            
+            if (Properties.ShowStatistic)
+            {
+                await ShowStatistics(Properties.EncryptFilePath);
+            }
             
         }
 
@@ -412,6 +438,11 @@ namespace Cipher.Model
             {
                 string msg = "exception ocurred " + ex.Message;
                 Properties.MethodErrors.Add(msg);
+            }
+
+            if (Properties.ShowStatistic)
+            {
+                await ShowStatistics(Properties.DecryptFilePath);
             }
 
         }
@@ -663,6 +694,90 @@ namespace Cipher.Model
                 
             }      
 
+        }
+
+        public async Task ShowStatistics(string path)
+        {
+            string copyFile = path.Substring(0, path.LastIndexOf('.')) + "_copy.dat";
+            FileInfo info = new FileInfo(path);
+            info.CopyTo(copyFile);
+
+            string oupPath = path.Substring(0, path.LastIndexOf(".")) + "_statistics.xlsx";
+            List<ABCItem> items = new List<ABCItem>();
+            int countAll = 0;
+            using (StreamReader reader = new StreamReader(copyFile))
+            {
+                char[] buffer = new char[BufferSize];
+                int i = 0;
+                int n = await reader.ReadAsync(buffer);
+                while (i < n)
+                {
+                    string temp = "";
+                    for (int j = 0; j < 4; j++)
+                    {
+                        temp += buffer[i];
+                        i++;
+                    }
+                    int code = -1;
+                    if (int.TryParse(temp, out code))
+                    {
+                        ABCItem? item = items.Where(t => t.Code == code).FirstOrDefault();
+                        if (item != null)
+                        {
+                            item.CountInText++;
+                        }
+                        else
+                        {
+                            item = new ABCItem();
+                            item.Code = code;
+                            item.CountInText = 1;
+                            items.Add(item);
+                        }
+                        countAll++;
+                    }    
+                   
+                }
+               
+               
+                for (i = 0; i < items.Count; i++)
+                {
+                    items[i].Freq = items[i].CountInText / countAll;
+                }
+
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+                using (ExcelPackage package = new ExcelPackage(oupPath))
+                {
+                    ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("statistics");
+                    worksheet.Row(1).Style.Font.Bold = true;
+
+                    worksheet.Cells[1, 2].Value = "symbol";
+                    worksheet.Cells[1, 3].Value = "count in text";
+                    worksheet.Cells[1, 4].Value = "frequency";
+                    
+                    for (i = 0; i< items.Count; i++)
+                    {
+                        ABCItem item = items[i];
+                        worksheet.Cells[i + 1, 1].Value = item.Code;
+                        worksheet.Cells[i + 1, 2].Value = item.CountInText;
+                        worksheet.Cells[i + 1, 3].Value = item.Freq;
+                    }
+
+                    for (i = 0; i< 3; i++)
+                    {
+                        worksheet.Column(i + 1).AutoFit();
+                    }
+
+                    FileStream stream = File.Create(oupPath);
+                    stream.Close();
+                    await File.WriteAllBytesAsync(oupPath, package.GetAsByteArray());
+
+                }
+            }
+
+            if (File.Exists(copyFile))
+                File.Delete(copyFile);
+            
         }
 
 

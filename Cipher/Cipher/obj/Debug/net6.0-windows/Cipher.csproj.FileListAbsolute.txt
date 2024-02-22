@@ -52,3 +52,17 @@ G:\VS projects\Cipher\Cipher\obj\Debug\net6.0-windows\Cipher.csproj.AssemblyRefe
 G:\VS projects\Cipher\Cipher\obj\Debug\net6.0-windows\Cipher.csproj.CopyComplete
 G:\VS projects\Cipher\Cipher\obj\Debug\net6.0-windows\Cipher.ABCForm.resources
 G:\VS projects\Cipher\Cipher\obj\Debug\net6.0-windows\Cipher.MainForm.resources
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\EPPlus.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\EPPlus.Interfaces.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\EPPlus.System.Drawing.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\Microsoft.Extensions.Configuration.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\Microsoft.Extensions.Configuration.Abstractions.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\Microsoft.Extensions.Configuration.FileExtensions.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\Microsoft.Extensions.Configuration.Json.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\Microsoft.Extensions.FileProviders.Abstractions.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\Microsoft.Extensions.FileProviders.Physical.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\Microsoft.Extensions.FileSystemGlobbing.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\Microsoft.Extensions.Primitives.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\Microsoft.IO.RecyclableMemoryStream.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\System.Security.Cryptography.Pkcs.dll
+G:\VS projects\Cipher\Cipher\bin\Debug\net6.0-windows\runtimes\win\lib\net6.0\System.Security.Cryptography.Pkcs.dll

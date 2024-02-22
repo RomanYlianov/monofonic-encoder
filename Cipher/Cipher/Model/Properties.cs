@@ -13,6 +13,12 @@ namespace Cipher.Model
 
         public static Guid? UserId { get; set; }
 
+        public static bool ShowStatistic { get; set; }
+
+        public static int MultiplyCoefficient { get; set; }
+
+        public static LearnMode Mode { get; set; }
+
 
         private static string _ABC = DefaultABC;
 
@@ -66,6 +72,11 @@ namespace Cipher.Model
     enum AlgData
     {
         DEFAULT, CUSTOM
+    }
+
+    enum LearnMode
+    {
+        AUTO, MANUAL
     }
 
 }
